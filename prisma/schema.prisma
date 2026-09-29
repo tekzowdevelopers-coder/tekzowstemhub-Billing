@@ -1,0 +1,249 @@
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Branch {
+  id          String       @id @default(cuid())
+  name        String
+  code        String       @unique
+  address     String
+  phone       String
+  email       String
+  logoUrl     String?
+  status      String       @default("ACTIVE")
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  users       User[]
+  students    Student[]
+  enrollments Enrollment[]
+  payments    Payment[]
+  receipts    Receipt[]
+}
+
+model User {
+  id           String    @id @default(cuid())
+  branchId     String?
+  branch       Branch?   @relation(fields: [branchId], references: [id], onDelete: SetNull)
+  name         String
+  email        String    @unique
+  phone        String
+  passwordHash String
+  role         String    @default("STAFF_CASHIER") // SUPER_ADMIN, BRANCH_ADMIN, STAFF_CASHIER, ACCOUNTANT
+  status       String    @default("ACTIVE")
+  lastLogin    DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+}
+
+model Student {
+  id           String        @id @default(cuid())
+  branchId     String
+  branch       Branch        @relation(fields: [branchId], references: [id])
+  studentCode  String        @unique
+  name         String
+  dob          DateTime?
+  gender       String        @default("Male")
+  schoolName   String?
+  grade        String?
+  academicYear String?
+  photoUrl     String?
+  address      String?
+  city         String?
+  state        String?
+  pincode      String?
+  status       String        @default("ACTIVE")
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+
+  parent       Parent?
+  enrollments  Enrollment[]
+  payments     Payment[]
+}
+
+model Parent {
+  id              String   @id @default(cuid())
+  studentId       String   @unique
+  student         Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  fatherName      String?
+  motherName      String?
+  guardianName    String?
+  relationship    String?  @default("Father")
+  mobile          String
+  whatsappNumber  String
+  alternateMobile String?
+  email           String?
+  address         String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model Course {
+  id          String       @id @default(cuid())
+  branchId    String?
+  name        String
+  description String?
+  duration    String?
+  status      String       @default("ACTIVE")
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  plans       Plan[]
+  enrollments Enrollment[]
+}
+
+model Plan {
+  id             String            @id @default(cuid())
+  courseId       String
+  course         Course            @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  name           String
+  durationMonths Int
+  totalFee       Float
+  status         String            @default("ACTIVE")
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
+
+  installments   PlanInstallment[]
+  enrollments    Enrollment[]
+}
+
+model PlanInstallment {
+  id                String   @id @default(cuid())
+  planId            String
+  plan              Plan     @relation(fields: [planId], references: [id], onDelete: Cascade)
+  installmentNumber Int
+  percentage        Float
+  defaultAmount     Float
+  dueOffsetMonths   Int      @default(0)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+}
+
+model Enrollment {
+  id           String        @id @default(cuid())
+  branchId     String
+  branch       Branch        @relation(fields: [branchId], references: [id])
+  studentId    String
+  student      Student       @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  courseId     String
+  course       Course        @relation(fields: [courseId], references: [id])
+  planId       String
+  plan         Plan          @relation(fields: [planId], references: [id])
+  startDate    DateTime      @default(now())
+  endDate      DateTime?
+  planFee      Float
+  discount     Float         @default(0)
+  finalFee     Float
+  status       String        @default("ACTIVE")
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+
+  installments Installment[]
+  payments     Payment[]
+}
+
+model Installment {
+  id                String     @id @default(cuid())
+  enrollmentId      String
+  enrollment        Enrollment @relation(fields: [enrollmentId], references: [id], onDelete: Cascade)
+  installmentNumber Int
+  amount            Float
+  dueDate           DateTime
+  paidAmount        Float      @default(0)
+  balanceAmount     Float
+  status            String     @default("PENDING") // PENDING, PARTIAL, PAID, OVERDUE, CANCELLED
+  createdAt         DateTime   @default(now())
+  updatedAt         DateTime   @updatedAt
+
+  payments          Payment[]
+}
+
+model Payment {
+  id                   String      @id @default(cuid())
+  branchId             String
+  branch               Branch      @relation(fields: [branchId], references: [id])
+  studentId            String
+  student              Student     @relation(fields: [studentId], references: [id])
+  enrollmentId         String
+  enrollment           Enrollment  @relation(fields: [enrollmentId], references: [id])
+  installmentId        String
+  installment          Installment @relation(fields: [installmentId], references: [id])
+  amount               Float
+  paymentMode          String      // CASH, UPI, BANK_TRANSFER, CARD, CHEQUE, OTHER
+  transactionReference String?
+  paymentDate          DateTime    @default(now())
+  notes                String?
+  status               String      @default("ACTIVE") // ACTIVE, VOID, REVERSED, REFUNDED
+  createdBy            String?
+  createdAt            DateTime    @default(now())
+  updatedAt            DateTime    @updatedAt
+
+  receipt              Receipt?
+}
+
+model Receipt {
+  id             String    @id @default(cuid())
+  branchId       String
+  branch         Branch    @relation(fields: [branchId], references: [id])
+  paymentId      String    @unique
+  payment        Payment   @relation(fields: [paymentId], references: [id])
+  receiptNumber  String    @unique
+  pdfUrl         String?
+  generatedAt    DateTime  @default(now())
+  whatsappStatus String    @default("NOT_SENT") // NOT_SENT, QUEUED, SENT, DELIVERED, FAILED
+  smsStatus      String    @default("NOT_SENT") // NOT_SENT, QUEUED, SENT, DELIVERED, FAILED
+}
+
+model Notification {
+  id         String            @id @default(cuid())
+  branchId   String
+  studentId  String
+  parentId   String?
+  paymentId  String?
+  channel    String            // WHATSAPP, SMS
+  templateId String
+  status     String            @default("QUEUED")
+  createdAt  DateTime          @default(now())
+
+  logs       NotificationLog[]
+}
+
+model NotificationLog {
+  id                String       @id @default(cuid())
+  notificationId    String
+  notification      Notification @relation(fields: [notificationId], references: [id], onDelete: Cascade)
+  provider          String       @default("TEKZOW_CONNECT_GATEWAY")
+  providerMessageId String?
+  recipient         String
+  message           String
+  status            String       @default("QUEUED") // QUEUED, SENT, DELIVERED, FAILED
+  errorMessage      String?
+  sentAt            DateTime?
+  deliveredAt       DateTime?
+}
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  userId    String?
+  branchId  String?
+  action    String
+  entity    String
+  entityId  String?
+  oldData   String?
+  newData   String?
+  ipAddress String?  @default("127.0.0.1")
+  createdAt DateTime @default(now())
+}
+
+model Setting {
+  id        String   @id @default(cuid())
+  branchId  String?
+  key       String   @unique
+  value     String
+  updatedAt DateTime @updatedAt
+}
