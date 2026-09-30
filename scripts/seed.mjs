@@ -132,72 +132,75 @@ async function main() {
     },
   });
 
-  // 5. Create Plans with Dynamic Installment Breakdown
-  // Robotics 6-Month Plan
-  const robotics6MoPlan = await prisma.plan.create({
-    data: {
-      courseId: roboticsCourse.id,
-      name: "6-Month Dual Track",
-      durationMonths: 6,
-      totalFee: 14000,
-      installments: {
-        create: [
-          { installmentNumber: 1, percentage: 50, defaultAmount: 7000, dueOffsetMonths: 0 },
-          { installmentNumber: 2, percentage: 50, defaultAmount: 7000, dueOffsetMonths: 2 },
-        ],
-      },
+  // 5. Create Standard Plans with Dynamic Installment Breakdown for All Courses
+  const STANDARD_COURSE_PLANS = [
+    {
+      name: "1 Month",
+      durationMonths: 1,
+      totalFee: 1800,
+      installments: [
+        { installmentNumber: 1, percentage: 100, defaultAmount: 1800, dueOffsetMonths: 0 },
+      ],
     },
-  });
-
-  // Robotics 12-Month Master Plan
-  const robotics12MoPlan = await prisma.plan.create({
-    data: {
-      courseId: roboticsCourse.id,
-      name: "12-Month Master Robotics",
-      durationMonths: 12,
-      totalFee: 24000,
-      installments: {
-        create: [
-          { installmentNumber: 1, percentage: 41.67, defaultAmount: 10000, dueOffsetMonths: 0 },
-          { installmentNumber: 2, percentage: 29.17, defaultAmount: 7000, dueOffsetMonths: 3 },
-          { installmentNumber: 3, percentage: 29.16, defaultAmount: 7000, dueOffsetMonths: 6 },
-        ],
-      },
-    },
-  });
-
-  // Coding 3-Month Plan
-  const coding3MoPlan = await prisma.plan.create({
-    data: {
-      courseId: codingCourse.id,
-      name: "3-Month Foundation",
+    {
+      name: "3 Months",
       durationMonths: 3,
-      totalFee: 8000,
-      installments: {
-        create: [
-          { installmentNumber: 1, percentage: 100, defaultAmount: 8000, dueOffsetMonths: 0 },
-        ],
-      },
+      totalFee: 4999,
+      installments: [
+        { installmentNumber: 1, percentage: 50.01, defaultAmount: 2500, dueOffsetMonths: 0 },
+        { installmentNumber: 2, percentage: 49.99, defaultAmount: 2499, dueOffsetMonths: 1 },
+      ],
     },
-  });
-
-  // Coding 6-Month Plan
-  const coding6MoPlan = await prisma.plan.create({
-    data: {
-      courseId: codingCourse.id,
-      name: "6-Month Full Stack Game Dev",
+    {
+      name: "6 Months",
       durationMonths: 6,
-      totalFee: 15000,
-      installments: {
-        create: [
-          { installmentNumber: 1, percentage: 50, defaultAmount: 7500, dueOffsetMonths: 0 },
-          { installmentNumber: 2, percentage: 50, defaultAmount: 7500, dueOffsetMonths: 2 },
-        ],
-      },
+      totalFee: 8999,
+      installments: [
+        { installmentNumber: 1, percentage: 50.01, defaultAmount: 4500, dueOffsetMonths: 0 },
+        { installmentNumber: 2, percentage: 49.99, defaultAmount: 4499, dueOffsetMonths: 2 },
+      ],
     },
-  });
+    {
+      name: "12 Months",
+      durationMonths: 12,
+      totalFee: 13999,
+      installments: [
+        { installmentNumber: 1, percentage: 35.72, defaultAmount: 5000, dueOffsetMonths: 0 },
+        { installmentNumber: 2, percentage: 32.14, defaultAmount: 4500, dueOffsetMonths: 3 },
+        { installmentNumber: 3, percentage: 32.14, defaultAmount: 4499, dueOffsetMonths: 6 },
+      ],
+    },
+  ];
 
-  console.log("Courses and Plans created");
+  async function createStandardPlansForCourse(cId) {
+    const created = [];
+    for (const p of STANDARD_COURSE_PLANS) {
+      const plan = await prisma.plan.create({
+        data: {
+          courseId: cId,
+          name: p.name,
+          durationMonths: p.durationMonths,
+          totalFee: p.totalFee,
+          status: "ACTIVE",
+          installments: {
+            create: p.installments,
+          },
+        },
+      });
+      created.push(plan);
+    }
+    return created;
+  }
+
+  const roboticsPlans = await createStandardPlansForCourse(roboticsCourse.id);
+  const codingPlans = await createStandardPlansForCourse(codingCourse.id);
+  const stemPlans = await createStandardPlansForCourse(stemCourse.id);
+  const dronePlans = await createStandardPlansForCourse(droneCourse.id);
+
+  const robotics6MoPlan = roboticsPlans.find((p) => p.durationMonths === 6);
+  const coding3MoPlan = codingPlans.find((p) => p.durationMonths === 3);
+
+  console.log("Courses and Standard Plans created for all 4 tracks");
 
   // Helper date function
   const now = new Date();
@@ -241,35 +244,35 @@ async function main() {
       courseId: roboticsCourse.id,
       planId: robotics6MoPlan.id,
       startDate: daysAgo(30),
-      planFee: 14000,
-      discount: 2000,
-      finalFee: 12000, // Custom discounted fee
+      planFee: 8999,
+      discount: 999,
+      finalFee: 8000, // Custom discounted fee
       status: "ACTIVE",
     },
   });
 
-  // Installment 1: ₹6,000 - Fully Paid
+  // Installment 1: ₹4,000 - Fully Paid
   const rahulInst1 = await prisma.installment.create({
     data: {
       enrollmentId: rahulEnrollment.id,
       installmentNumber: 1,
-      amount: 6000,
+      amount: 4000,
       dueDate: daysAgo(30),
-      paidAmount: 6000,
+      paidAmount: 4000,
       balanceAmount: 0,
       status: "PAID",
     },
   });
 
-  // Installment 2: ₹6,000 - Due in 30 days
+  // Installment 2: ₹4,000 - Due in 30 days
   const rahulInst2 = await prisma.installment.create({
     data: {
       enrollmentId: rahulEnrollment.id,
       installmentNumber: 2,
-      amount: 6000,
+      amount: 4000,
       dueDate: daysAhead(30),
       paidAmount: 0,
-      balanceAmount: 6000,
+      balanceAmount: 4000,
       status: "PENDING",
     },
   });
@@ -281,7 +284,7 @@ async function main() {
       studentId: rahul.id,
       enrollmentId: rahulEnrollment.id,
       installmentId: rahulInst1.id,
-      amount: 6000,
+      amount: 4000,
       paymentMode: "UPI",
       transactionReference: "UPI98451223341",
       paymentDate: daysAgo(30),
@@ -337,9 +340,9 @@ async function main() {
       courseId: codingCourse.id,
       planId: coding3MoPlan.id,
       startDate: daysAgo(10),
-      planFee: 8000,
+      planFee: 4999,
       discount: 0,
-      finalFee: 8000,
+      finalFee: 4999,
       status: "ACTIVE",
     },
   });
@@ -348,10 +351,10 @@ async function main() {
     data: {
       enrollmentId: priyaEnrollment.id,
       installmentNumber: 1,
-      amount: 8000,
+      amount: 2500,
       dueDate: daysAgo(10),
-      paidAmount: 4000,
-      balanceAmount: 4000,
+      paidAmount: 1500,
+      balanceAmount: 1000,
       status: "PARTIAL",
     },
   });
@@ -362,7 +365,7 @@ async function main() {
       studentId: priya.id,
       enrollmentId: priyaEnrollment.id,
       installmentId: priyaInst1.id,
-      amount: 4000,
+      amount: 1500,
       paymentMode: "CASH",
       transactionReference: "CASH-REC-001",
       paymentDate: daysAgo(10),
