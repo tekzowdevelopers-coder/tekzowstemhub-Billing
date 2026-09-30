@@ -198,7 +198,9 @@ async function main() {
   const dronePlans = await createStandardPlansForCourse(droneCourse.id);
 
   const robotics6MoPlan = roboticsPlans.find((p) => p.durationMonths === 6);
+  const robotics12MoPlan = roboticsPlans.find((p) => p.durationMonths === 12);
   const coding3MoPlan = codingPlans.find((p) => p.durationMonths === 3);
+  const coding6MoPlan = codingPlans.find((p) => p.durationMonths === 6);
 
   console.log("Courses and Standard Plans created for all 4 tracks");
 
@@ -421,9 +423,9 @@ async function main() {
       courseId: roboticsCourse.id,
       planId: robotics6MoPlan.id,
       startDate: daysAgo(75),
-      planFee: 14000,
+      planFee: 8999,
       discount: 0,
-      finalFee: 14000,
+      finalFee: 8999,
       status: "ACTIVE",
     },
   });
@@ -432,9 +434,9 @@ async function main() {
     data: {
       enrollmentId: arunEnrollment.id,
       installmentNumber: 1,
-      amount: 7000,
+      amount: 4500,
       dueDate: daysAgo(75),
-      paidAmount: 7000,
+      paidAmount: 4500,
       balanceAmount: 0,
       status: "PAID",
     },
@@ -445,10 +447,10 @@ async function main() {
     data: {
       enrollmentId: arunEnrollment.id,
       installmentNumber: 2,
-      amount: 7000,
+      amount: 4499,
       dueDate: daysAgo(15),
       paidAmount: 0,
-      balanceAmount: 7000,
+      balanceAmount: 4499,
       status: "OVERDUE",
     },
   });
@@ -459,7 +461,7 @@ async function main() {
       studentId: arun.id,
       enrollmentId: arunEnrollment.id,
       installmentId: arunInst1.id,
-      amount: 7000,
+      amount: 4500,
       paymentMode: "BANK_TRANSFER",
       transactionReference: "NEFT99238472",
       paymentDate: daysAgo(75),
@@ -515,9 +517,9 @@ async function main() {
       courseId: codingCourse.id,
       planId: coding6MoPlan.id,
       startDate: daysAgo(15),
-      planFee: 15000,
-      discount: 1000,
-      finalFee: 14000,
+      planFee: 8999,
+      discount: 0,
+      finalFee: 8999,
       status: "ACTIVE",
     },
   });
@@ -526,9 +528,9 @@ async function main() {
     data: {
       enrollmentId: ananyaEnrollment.id,
       installmentNumber: 1,
-      amount: 7000,
+      amount: 4500,
       dueDate: daysAgo(15),
-      paidAmount: 7000,
+      paidAmount: 4500,
       balanceAmount: 0,
       status: "PAID",
     },
@@ -538,10 +540,10 @@ async function main() {
     data: {
       enrollmentId: ananyaEnrollment.id,
       installmentNumber: 2,
-      amount: 7000,
+      amount: 4499,
       dueDate: daysAhead(45),
       paidAmount: 0,
-      balanceAmount: 7000,
+      balanceAmount: 4499,
       status: "PENDING",
     },
   });
@@ -552,7 +554,7 @@ async function main() {
       studentId: ananya.id,
       enrollmentId: ananyaEnrollment.id,
       installmentId: ananyaInst1.id,
-      amount: 7000,
+      amount: 4500,
       paymentMode: "UPI",
       transactionReference: "UPI98800123450",
       paymentDate: daysAgo(15),
@@ -608,9 +610,9 @@ async function main() {
       courseId: roboticsCourse.id,
       planId: robotics12MoPlan.id,
       startDate: daysAgo(90),
-      planFee: 24000,
+      planFee: 13999,
       discount: 0,
-      finalFee: 24000,
+      finalFee: 13999,
       status: "ACTIVE",
     },
   });
@@ -619,9 +621,9 @@ async function main() {
     data: {
       enrollmentId: karthikEnrollment.id,
       installmentNumber: 1,
-      amount: 10000,
+      amount: 5000,
       dueDate: daysAgo(90),
-      paidAmount: 10000,
+      paidAmount: 5000,
       balanceAmount: 0,
       status: "PAID",
     },
@@ -632,10 +634,10 @@ async function main() {
     data: {
       enrollmentId: karthikEnrollment.id,
       installmentNumber: 2,
-      amount: 7000,
+      amount: 4500,
       dueDate: daysAhead(3),
       paidAmount: 0,
-      balanceAmount: 7000,
+      balanceAmount: 4500,
       status: "PENDING",
     },
   });
@@ -644,10 +646,10 @@ async function main() {
     data: {
       enrollmentId: karthikEnrollment.id,
       installmentNumber: 3,
-      amount: 7000,
+      amount: 4499,
       dueDate: daysAhead(93),
       paidAmount: 0,
-      balanceAmount: 7000,
+      balanceAmount: 4499,
       status: "PENDING",
     },
   });
