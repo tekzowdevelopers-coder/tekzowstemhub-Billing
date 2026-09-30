@@ -54,3 +54,30 @@ export async function generateReceiptNumber(branchCode: string, year = 2026): Pr
   const seqStr = String(nextSeq).padStart(6, "0");
   return `${prefix}${seqStr}`;
 }
+
+export async function generateExpenseCode(branchCode: string, year = 2026): Promise<string> {
+  const prefix = `EXP-${branchCode.toUpperCase()}-${year}-`;
+  
+  const latestExpense = await (prisma as any).expense.findFirst({
+    where: {
+      expenseCode: {
+        startsWith: prefix,
+      },
+    },
+    orderBy: {
+      expenseCode: "desc",
+    },
+  });
+
+  let nextSeq = 1;
+  if (latestExpense && latestExpense.expenseCode) {
+    const parts = latestExpense.expenseCode.split("-");
+    const lastNum = parseInt(parts[parts.length - 1], 10);
+    if (!isNaN(lastNum)) {
+      nextSeq = lastNum + 1;
+    }
+  }
+
+  const seqStr = String(nextSeq).padStart(6, "0");
+  return `${prefix}${seqStr}`;
+}

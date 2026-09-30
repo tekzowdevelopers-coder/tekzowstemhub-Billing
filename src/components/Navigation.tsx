@@ -6,7 +6,7 @@ import { usePathname, useRouter } from "next/navigation";
 import {
   LayoutDashboard, Users, GraduationCap, CreditCard, CalendarClock,
   FileText, BookOpen, BarChart3, Bell, ShieldCheck, Building2,
-  ChevronDown, UserCheck, Menu, X, LogOut, Lock
+  ChevronDown, UserCheck, Menu, X, LogOut, Lock, Receipt
 } from "lucide-react";
 
 export default function Navigation({ children }: { children?: React.ReactNode }) {
@@ -70,6 +70,7 @@ export default function Navigation({ children }: { children?: React.ReactNode })
     { label: "Franchise Branches", href: "/branches", icon: Building2 },
     { label: "Notifications", href: "/notifications", icon: Bell },
     { label: "Audit Logs", href: "/audit", icon: ShieldCheck },
+    { label: "Expenses", href: "/expenses", icon: Receipt },
   ];
 
   return (
